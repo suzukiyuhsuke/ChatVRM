@@ -20,7 +20,7 @@ export default function Home() {
   const { viewer } = useContext(ViewerContext);
 
   const [systemPrompt, setSystemPrompt] = useState(SYSTEM_PROMPT);
-  const [openAiKey, setOpenAiKey] = useState("");
+  const [openAiKey, setOpenAiKey] = useState(process.env.NEXT_PUBLIC_AOAI_API_KEY || "");
   const [koeiromapKey, setKoeiromapKey] = useState("");
   const [koeiroParam, setKoeiroParam] = useState<KoeiroParam>(DEFAULT_PARAM);
   const [chatProcessing, setChatProcessing] = useState(false);
@@ -155,7 +155,10 @@ export default function Home() {
             }
 
             const aiText = `${tag} ${sentence}`;
+            console.log("aiText: " + aiText);
             const aiTalks = textsToScreenplay([aiText], koeiroParam);
+            console.log("koeiroParam:" + koeiroParam);
+            console.log("aiTasks[0]: " + aiTalks[0]);
             aiTextLog += aiText;
 
             // 文ごとに音声を生成 & 再生、返答を表示
@@ -213,7 +216,7 @@ export default function Home() {
         handleClickResetSystemPrompt={() => setSystemPrompt(SYSTEM_PROMPT)}
         onChangeKoeiromapKey={setKoeiromapKey}
       />
-      <GitHubLink />
+      {/* <GitHubLink /> */}
     </div>
   );
 }

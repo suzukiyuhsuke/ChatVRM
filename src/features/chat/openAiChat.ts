@@ -1,26 +1,26 @@
-import { Configuration, OpenAIApi } from "openai";
+import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
 import { Message } from "../messages/messages";
+import { Logger } from "@gltf-transform/core";
+import { log } from "console";
+import next from "next";
 
 export async function getChatResponse(messages: Message[], apiKey: string) {
   if (!apiKey) {
     throw new Error("Invalid API Key");
   }
 
-  const configuration = new Configuration({
-    apiKey: apiKey,
-  });
-  // ブラウザからAPIを叩くときに発生するエラーを無くすworkaround
-  // https://github.com/openai/openai-node/issues/6#issuecomment-1492814621
-  delete configuration.baseOptions.headers["User-Agent"];
 
-  const openai = new OpenAIApi(configuration);
+  const endpoint = process.env.NEXT_PUBLIC_AOAI_ENDPOINT;
+  if(!endpoint) {
+    throw new Error("Invalid Endpoint");
+  }
 
-  const { data } = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: messages,
-  });
+  const client = new OpenAIClient(endpoint, new AzureKeyCredential(apiKey));
 
-  const [aiRes] = data.choices;
+  const deploymentId = "gpt-3.5-turbo";
+
+  const { choices } = await client.getChatCompletions(deploymentId, messages);
+  const [aiRes] = choices;
   const message = aiRes.message?.content || "エラーが発生しました";
 
   return { message: message };
@@ -34,18 +34,25 @@ export async function getChatResponseStream(
     throw new Error("Invalid API Key");
   }
 
+  console.log(messages);
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${apiKey}`,
+//    Authorization: `Bearer ${apiKey}`,
+    "api-key": apiKey,
   };
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const aoaiStreamAPIEndpoint = process.env.NEXT_PUBLIC_AOAI_STREAM_API_ENDPOINT;
+  if(!aoaiStreamAPIEndpoint) {
+    throw new Error("Invalid Endpoint");
+  }
+  const res = await fetch(aoaiStreamAPIEndpoint, {
     headers: headers,
     method: "POST",
     body: JSON.stringify({
-      model: "gpt-3.5-turbo",
+      //model: "gpt-3.5-turbo",
       messages: messages,
       stream: true,
-      max_tokens: 200,
+      //max_tokens: 200,
     }),
   });
 
@@ -60,16 +67,24 @@ export async function getChatResponseStream(
       try {
         while (true) {
           const { done, value } = await reader.read();
+          console.log("value: " + value);
           if (done) break;
           const data = decoder.decode(value);
+          // console.log(value);
+          // console.log(data);
           const chunks = data
             .split("data:")
             .filter((val) => !!val && val.trim() !== "[DONE]");
           for (const chunk of chunks) {
+            console.log("chunk:" + chunk);
             const json = JSON.parse(chunk);
-            const messagePiece = json.choices[0].delta.content;
-            if (!!messagePiece) {
-              controller.enqueue(messagePiece);
+            // console.log(json);
+            // console.log(json.choices.length);
+            if(json.choices.length != 0) {
+              const messagePiece = json.choices[0].delta.content;
+              if (!!messagePiece) {
+                controller.enqueue(messagePiece);
+              }
             }
           }
         }

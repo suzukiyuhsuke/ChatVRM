@@ -23,7 +23,10 @@ const createSpeakCharacter = () => {
       }
 
       const buffer = await fetchAudio(screenplay.talk, koeiroApiKey).catch(
-        () => null
+        () => {
+          console.log("fetchAudio error");
+          return null;
+        }
       );
       lastTime = Date.now();
       return buffer;
