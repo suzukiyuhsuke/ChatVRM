@@ -2,6 +2,11 @@ import { buildUrl } from "@/utils/buildUrl";
 import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
+  const gender = process.env.NEXT_PUBLIC_GENDER || "";
+  let bgUrl = "/bg-c.png"
+  if(gender == "male") {
+     bgUrl = "/bg-c-male.png"
+  }
   return (
     <Html lang="ja">
       <Head>
@@ -16,7 +21,7 @@ export default function Document() {
           rel="stylesheet"
         />
       </Head>
-      <body style={{ backgroundImage: `url(${buildUrl("/bg-c.png")})` }}>
+      <body style={{ backgroundImage: `url(${buildUrl(bgUrl)})` }}>
         <Main />
         <NextScript />
       </body>

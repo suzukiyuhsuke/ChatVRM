@@ -27,6 +27,8 @@ export default function Home() {
   const [chatLog, setChatLog] = useState<Message[]>([]);
   const [assistantMessage, setAssistantMessage] = useState("");
 
+  const [voiceName, setVoiceName] = useState(process.env.NEXT_PUBLIC_VOICE_NAME || "ja-JP-Ayumi-Apollo");
+
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
       const params = JSON.parse(
@@ -190,12 +192,12 @@ export default function Home() {
   return (
     <div className={"font-M_PLUS_2"}>
       <Meta />
-      <Introduction
+      {/* <Introduction
         openAiKey={openAiKey}
         koeiroMapKey={koeiromapKey}
         onChangeAiKey={setOpenAiKey}
         onChangeKoeiromapKey={setKoeiromapKey}
-      />
+      /> */}
       <VrmViewer />
       <MessageInputContainer
         isChatProcessing={chatProcessing}

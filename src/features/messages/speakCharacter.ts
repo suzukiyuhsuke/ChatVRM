@@ -22,7 +22,12 @@ const createSpeakCharacter = () => {
         await wait(1000 - (now - lastTime));
       }
 
-      const buffer = await fetchAudio(screenplay.talk, koeiroApiKey).catch(
+      const voiceName = process.env.NEXT_PUBLIC_COGNITIVE_SPEECH_VOICE_NAME;
+      if(!voiceName) {
+        throw new Error("cognitiveSpeechVoiceName is not defined.");
+      }
+    
+      const buffer = await fetchAudio(screenplay.talk, koeiroApiKey, voiceName).catch(
         () => {
           console.log("fetchAudio error");
           return null;
@@ -52,14 +57,16 @@ export const speakCharacter = createSpeakCharacter();
 
 export const fetchAudio = async (
   talk: Talk,
-  apiKey: string
+  apiKey: string,
+  voiceName: string
 ): Promise<ArrayBuffer> => {
   const ttsVoice = await synthesizeVoiceApi(
     talk.message,
     talk.speakerX,
     talk.speakerY,
     talk.style,
-    apiKey
+    apiKey,
+    voiceName
   );
   const url = ttsVoice.audio;
 

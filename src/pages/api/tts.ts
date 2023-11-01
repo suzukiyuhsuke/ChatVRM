@@ -16,12 +16,7 @@ export default async function handler(
   const speakerY = req.body.speakerY;
   const style = req.body.style;
   const apiKey = req.body.apiKey;
-
-  console.log("req.body.message:" + req.body.message);
-  console.log("req.body.speakerX:" + req.body.speakerX);
-  console.log("req.body.speakerY:" + req.body.speakerY);
-  console.log("req.body.style:" + req.body.style);
-  console.log("req.body.apiKey:" + req.body.apiKey);
+  const voiceName = req.body.voiceName;
 
   const cognitiveSpeechRegion = process.env.COGNITIVE_SPEECH_REGION;
   if (!cognitiveSpeechRegion) {
@@ -32,9 +27,15 @@ export default async function handler(
     throw new Error("cognitiveSpeechSubscriptionKey is not defined.");
   }
 
+  const cognitiveSpeechVoiceName = process.env.NEXT_PUBLIC_COGNITIVE_SPEECH_VOICE_NAME;
+  if(!cognitiveSpeechVoiceName) {
+    throw new Error("cognitiveSpeechVoiceName is not defined.");
+  }
+  
+
   const speechConfig = SpeechConfig.fromSubscription(cognitiveSpeechSubscriptionKey, cognitiveSpeechRegion);
   speechConfig.speechSynthesisLanguage = "ja-JP";
-  speechConfig.speechSynthesisVoiceName = "ja-JP-NanamiNeural"
+  speechConfig.speechSynthesisVoiceName = voiceName;
   speechConfig.speechSynthesisOutputFormat = 5;
 
   const synthesizer = new SpeechSynthesizer(speechConfig);
